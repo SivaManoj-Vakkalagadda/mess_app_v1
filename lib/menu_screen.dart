@@ -72,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _fetchMenuForDay(String day) async {
     try {
       final String baseUrl =
-          'https://two6mess.onrender.com'; // Ensure HTTPS URL
+          'https://mess-app-cmk0.onrender.com'; // Ensure HTTPS URL
       final response = await http.get(Uri.parse('$baseUrl/getMenuForDay/$day'));
 
       if (response.statusCode == 200) {

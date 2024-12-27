@@ -10,18 +10,19 @@ class ComplaintRegister extends StatefulWidget {
 }
 
 class _ComplaintRegisterState extends State<ComplaintRegister> {
+  bool isSubmitting = false; // Flag for loading indicator
+
   // Controllers for the text fields
   final TextEditingController rollNoController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController complaintController = TextEditingController();
 
-  bool isSubmitting = false;
-
+  // Function to handle form submission
   void _submitForm(
       BuildContext context,
       TextEditingController rollNoController,
       TextEditingController emailController,
-      TextEditingController complaintController) async {
+      TextEditingController complaintController) {
     const String scriptURL =
         'https://script.google.com/macros/s/AKfycbxIg_YckWRhWcE0fVtOOf12B9uZEGrhs3K3Npdw1I3D2kWPWVExoK-LOew7fRrAWKHaWA/exec';
     String tempRollNo = rollNoController.text;
@@ -35,47 +36,55 @@ class _ComplaintRegisterState extends State<ComplaintRegister> {
       return;
     }
 
+    // Set isSubmitting to true when the request starts
     setState(() {
       isSubmitting = true;
     });
 
     String queryString =
         "?email_id=$tempEmail&roll_number=$tempRollNo&complaint=$tempComplaint";
-
     var finalURI = Uri.parse(scriptURL + queryString);
-    var response = await http.get(finalURI);
 
-    setState(() {
-      isSubmitting = false;
+    // Performing the network request
+    http.get(finalURI).then((response) {
+      setState(() {
+        isSubmitting = false; // Reset the loading state
+      });
+
+      if (response.statusCode == 200) {
+        var bodyR = convert.jsonDecode(response.body);
+        print(bodyR);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Complaint submitted successfully!')),
+        );
+
+        // Clear the form after submission
+        rollNoController.clear();
+        emailController.clear();
+        complaintController.clear();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to submit complaint!')),
+        );
+      }
+    }).catchError((e) {
+      setState(() {
+        isSubmitting = false; // Reset the loading state on error
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error occurred: $e')),
+      );
     });
-
-    if (response.statusCode == 200) {
-      var bodyR = convert.jsonDecode(response.body);
-      print(bodyR);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Complaint submitted successfully!')),
-      );
-
-      // Clear the form after submission
-      rollNoController.clear();
-      emailController.clear();
-      complaintController.clear();
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to submit complaint!')),
-      );
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
-    double horizontalPadding =
-        screenWidth * 0.1; // 10% of screen width for horizontal padding
-    double verticalPadding =
-        screenHeight * 0.1; // 10% of screen height for vertical padding
+
+    double horizontalPadding = screenWidth * 0.1; // 10% of screen width
+    double verticalPadding = screenHeight * 0.1; // 10% of screen height
 
     return Scaffold(
       appBar: AppBar(
@@ -88,12 +97,12 @@ class _ComplaintRegisterState extends State<ComplaintRegister> {
             padding: EdgeInsets.symmetric(
                 horizontal: horizontalPadding, vertical: verticalPadding),
             child: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
               child: Container(
-                width: screenWidth * 0.9, // 90% of the screen width
+                width: screenWidth * 0.8, // 80% of the screen width
                 decoration: BoxDecoration(
                   color: Colors.white, // White background for the container
-                  borderRadius: BorderRadius.circular(
-                      10), // Rounded corners for the container
+                  borderRadius: BorderRadius.circular(10), // Rounded corners
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black26,
@@ -146,18 +155,27 @@ class _ComplaintRegisterState extends State<ComplaintRegister> {
                       SizedBox(height: 20), // Space for submit button
 
                       // Submit Button
-                      if (isSubmitting)
-                        Center(child: CircularProgressIndicator())
-                      else
-                        ElevatedButton(
-                          onPressed: () => _submitForm(
-                            context,
-                            rollNoController,
-                            emailController,
-                            complaintController,
-                          ),
-                          child: Text("Submit"),
+                      ElevatedButton(
+                        onPressed: () => _submitForm(
+                          context,
+                          rollNoController,
+                          emailController,
+                          complaintController,
                         ),
+                        child: isSubmitting
+                            ? Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2.0,
+                                  ),
+                                  SizedBox(width: 10),
+                                  Text("Submitting..."),
+                                ],
+                              )
+                            : Text("Submit"),
+                      ),
                     ],
                   ),
                 ),
