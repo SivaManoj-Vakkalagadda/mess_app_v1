@@ -306,16 +306,24 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               TableCell(
                   child: Center(
+                      child: Padding(
+                padding: const EdgeInsets.all(16.0),
                 child: Text('Category',
                     style: TextStyle(
-                        fontWeight: FontWeight.bold, fontFamily: 'Roboto')),
-              )),
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Roboto',
+                        fontSize: 18)),
+              ))),
               TableCell(
                   child: Center(
+                      child: Padding(
+                padding: const EdgeInsets.all(16.0),
                 child: Text('Items',
                     style: TextStyle(
-                        fontWeight: FontWeight.bold, fontFamily: 'Roboto')),
-              )),
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Roboto',
+                        fontSize: 18)),
+              ))),
             ],
           ),
           for (int i = 0;
@@ -323,11 +331,17 @@ class _HomeScreenState extends State<HomeScreen> {
               i++) // Loop through the categories
             TableRow(children: [
               TableCell(
-                  child: Text(categories[i],
-                      style: TextStyle(fontWeight: FontWeight.bold))),
+                  child: Center(
+                      child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(categories[i],
+                              style: TextStyle(fontWeight: FontWeight.bold))))),
               TableCell(
-                  child: Text(mealItems[i] ?? 'No data',
-                      style: TextStyle(fontSize: 16.0))),
+                  child: Center(
+                      child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(mealItems[i] ?? 'No data',
+                              style: TextStyle(fontSize: 16.0))))),
             ])
         ],
       ),
