@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mess_28/admin.dart';
 // import 'package:intl/intl.dart';
 // import 'package:mess_23/screens/complaint_register.dart';
 // import 'package:mess_23/screens/menu_screen.dart';
@@ -69,6 +70,17 @@ class HomePage extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => ComplaintRegister()),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.home),
+              title: Text('Admin'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AdminAccessPage()),
                 );
               },
             ),
