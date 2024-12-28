@@ -42,19 +42,34 @@ app.get('/', (req, res) => {
   res.send('Welcome to the Mess Menu API');
 });
 
-// API endpoint to fetch the menu for a specific day
-app.get('/getMenuForDay/:day', async (req, res) => {
+// API endpoint to update the meal item
+app.put('/updateMeal', async (req, res) => {
+  const { day, mealTime, category, newItem } = req.body;
+
   try {
-    const { day } = req.params; // Get the 'day' parameter from the URL
-    const menuData = await Menu.findOne({ day: day }); // Query the database for the menu of the given day
+    // Find the menu for the given day
+    const menuData = await Menu.findOne({ day: day });
 
     if (!menuData) {
       return res.status(404).send('Menu not found for this day');
     }
 
-    res.json(menuData); // Return the menu data as JSON
+    // Update the appropriate category (meal time)
+    const categoryIndex = menuData[mealTime].indexOf(category);
+
+    if (categoryIndex === -1) {
+      return res.status(404).send(`Category ${category} not found in ${mealTime}`);
+    }
+
+    // Replace the item in the selected category
+    menuData[mealTime][categoryIndex] = newItem;
+
+    // Save the updated menu
+    await menuData.save();
+
+    res.status(200).send('Meal updated successfully');
   } catch (err) {
-    console.error('Error fetching menu:', err);
+    console.error('Error updating meal:', err);
     res.status(500).send('Server error');
   }
 });

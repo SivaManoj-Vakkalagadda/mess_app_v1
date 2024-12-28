@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class SuccessPage extends StatefulWidget {
   @override
@@ -57,14 +59,34 @@ class _SuccessPageState extends State<SuccessPage> {
   };
 
   // Simulating the update action (no backend)
-  void updateMeal() {
+  Future<void> updateMeal() async {
     if (selectedCategory != null && textController.text.isNotEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-              'Updated $selectedCategory with "${textController.text}" on $selectedDay for $selectedMealTime.'),
-        ),
-      );
+      try {
+        final response = await http.put(
+          Uri.parse('https://your-server-url.com/updateMeal'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'day': selectedDay,
+            'mealTime': selectedMealTime,
+            'category': selectedCategory,
+            'newItem': textController.text,
+          }),
+        );
+
+        if (response.statusCode == 200) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Meal updated successfully!')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to update meal!')),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -105,7 +127,6 @@ class _SuccessPageState extends State<SuccessPage> {
                     ),
                   ),
                   SizedBox(height: 8),
-                  // Day dropdown with white background
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white, // White background for the dropdown
@@ -123,9 +144,6 @@ class _SuccessPageState extends State<SuccessPage> {
                             value: day, child: Text(day));
                       }).toList(),
                       isExpanded: true,
-                      hint: Text('Select Day'),
-                      dropdownColor: Colors
-                          .white, // Ensure dropdown items also have white background
                     ),
                   ),
                   SizedBox(height: 16),
@@ -140,7 +158,6 @@ class _SuccessPageState extends State<SuccessPage> {
                     ),
                   ),
                   SizedBox(height: 8),
-                  // Meal time dropdown with white background
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white, // White background for the dropdown
@@ -161,9 +178,6 @@ class _SuccessPageState extends State<SuccessPage> {
                             value: meal, child: Text(meal));
                       }).toList(),
                       isExpanded: true,
-                      hint: Text('Select Meal Time'),
-                      dropdownColor: Colors
-                          .white, // Ensure dropdown items also have white background
                     ),
                   ),
                   SizedBox(height: 16),
@@ -178,10 +192,9 @@ class _SuccessPageState extends State<SuccessPage> {
                     ),
                   ),
                   SizedBox(height: 8),
-                  // Category dropdown with white background
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.white, // White background for the dropdown
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: DropdownButton<String>(
@@ -199,44 +212,31 @@ class _SuccessPageState extends State<SuccessPage> {
                             }).toList()
                           : [],
                       isExpanded: true,
-                      hint: Text('Select Category'),
-                      dropdownColor: Colors
-                          .white, // Ensure dropdown items also have white background
                     ),
                   ),
                   SizedBox(height: 16),
 
-                  // TextField wrapped in a container with white background
+                  // TextField for new item
                   Container(
-                    width: 0.6 *
-                        screenWidth, // Container width is 60% of screen width
+                    width: 0.6 * screenWidth,
                     decoration: BoxDecoration(
-                      color: Colors
-                          .white, // White background for the text field container
-                      borderRadius: BorderRadius.circular(8), // Rounded corners
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: TextField(
                       controller: textController,
                       decoration: InputDecoration(
                         labelText: 'Enter new item',
-                        fillColor: Colors.white,
                         labelStyle: TextStyle(color: Colors.black),
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.black),
-                        ),
                       ),
-                      style: TextStyle(color: Colors.black), // Black text color
+                      style: TextStyle(color: Colors.black),
                     ),
                   ),
                   SizedBox(height: 16),
 
-                  // Submit button to simulate the update
                   ElevatedButton(
                     onPressed: updateMeal,
                     child: Text('Submit'),
-                    style: ElevatedButton.styleFrom(
-                      iconColor: Colors.orange, // Button color
-                    ),
                   ),
                 ],
               ),
