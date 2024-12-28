@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 class SuccessPage extends StatefulWidget {
   @override
@@ -58,35 +56,20 @@ class _SuccessPageState extends State<SuccessPage> {
     ],
   };
 
-  // Function to send the updated meal information to the backend
-  Future<void> updateMealInDatabase(
-      String day, String mealTime, String category, String newItem) async {
-    try {
-      final url = Uri.parse(
-          'https://mess-app-cmk0.onrender.com/update-meal'); // Backend URL
-
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'day': day,
-          'mealTime': mealTime.toLowerCase(), // Ensure mealTime is lowercase
-          'category': category,
-          'newItem': newItem,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Meal updated successfully')));
-      } else {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Failed to update meal')));
-      }
-    } catch (error) {
-      print('Error: $error');
+  // Simulating the update action (no backend)
+  void updateMeal() {
+    if (selectedCategory != null && textController.text.isNotEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error occurred while updating meal')));
+        SnackBar(
+          content: Text(
+              'Updated $selectedCategory with "${textController.text}" on $selectedDay for $selectedMealTime.'),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('Please select a category and enter a new item')),
+      );
     }
   }
 
@@ -150,23 +133,9 @@ class _SuccessPageState extends State<SuccessPage> {
               decoration: InputDecoration(labelText: 'Enter new item'),
             ),
 
-            // Submit button to trigger the update in the database
+            // Submit button to simulate the update
             ElevatedButton(
-              onPressed: () {
-                if (selectedCategory != null &&
-                    textController.text.isNotEmpty) {
-                  updateMealInDatabase(
-                    selectedDay!,
-                    selectedMealTime!,
-                    selectedCategory!,
-                    textController.text,
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text(
-                          'Please select a category and enter a new item')));
-                }
-              },
+              onPressed: updateMeal, // Call the updateMeal function
               child: Text('Submit'),
             ),
           ],

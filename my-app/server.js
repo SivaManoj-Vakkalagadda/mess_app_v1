@@ -59,63 +59,6 @@ app.get('/getMenuForDay/:day', async (req, res) => {
   }
 });
 
-// API endpoint to update a specific item in the array (breakfast, lunch, etc.)
-app.post('/update-meal', async (req, res) => {
-  const { day, mealTime, category, newItem } = req.body;
-
-  // Validate the request data
-  if (!day || !mealTime || !category || !newItem) {
-    return res.status(400).json({ message: 'Missing required fields: day, mealTime, category, or newItem' });
-  }
-
-  try {
-    // Find the document for the given day
-    const menu = await Menu.findOne({ day: day });
-
-    if (!menu) {
-      return res.status(404).json({ message: 'Menu not found for this day' });
-    }
-
-    // Validate mealTime and get the corresponding meal array
-    let mealArray;
-    switch (mealTime.toLowerCase()) {
-      case 'breakfast':
-        mealArray = menu.breakfast;
-        break;
-      case 'lunch':
-        mealArray = menu.lunch;
-        break;
-      case 'snacks':
-        mealArray = menu.snacks;
-        break;
-      case 'dinner':
-        mealArray = menu.dinner;
-        break;
-      default:
-        return res.status(400).json({ message: 'Invalid meal time' });
-    }
-
-    // Check if category exists in the selected meal array and get the index
-    const categoryIndex = mealArray.findIndex(item => item === category);
-
-    if (categoryIndex === -1) {
-      return res.status(400).json({ message: 'Category not found in the selected meal time' });
-    }
-
-    // Replace the item at the found index with the new item
-    mealArray[categoryIndex] = newItem;
-
-    // Save the updated menu document
-    await menu.save();
-
-    // Respond with a success message and updated menu
-    res.status(200).json({ message: 'Meal updated successfully', updatedMenu: menu });
-  } catch (err) {
-    console.error('Error updating meal:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
 // Start the server and listen on the specified port
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
