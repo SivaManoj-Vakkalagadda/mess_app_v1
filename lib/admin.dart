@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mess_28/successpage.dart';
 
 class AdminAccessPage extends StatefulWidget {
   @override
@@ -11,8 +12,8 @@ class _AdminAccessPageState extends State<AdminAccessPage> {
   final TextEditingController _passwordController = TextEditingController();
 
   // Dummy credentials
-  final String correctEmail = "admin@admin.com";
-  final String correctPassword = "password123";
+  final String correctEmail = "mess@iitgoa";
+  final String correctPassword = "secy@iitgoa";
 
   // Function to validate credentials
   void _validateCredentials() {
@@ -108,23 +109,6 @@ class _AdminAccessPageState extends State<AdminAccessPage> {
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class SuccessPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Success'),
-      ),
-      body: Center(
-        child: Text(
-          'You have successfully logged in!',
-          style: TextStyle(fontSize: 24),
         ),
       ),
     );
