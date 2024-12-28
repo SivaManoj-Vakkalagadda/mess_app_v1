@@ -13,7 +13,6 @@ class _SuccessPageState extends State<SuccessPage> {
   String? selectedCategory;
   TextEditingController textController = TextEditingController();
 
-  // List of days of the week
   List<String> days = [
     'Monday',
     'Tuesday',
@@ -24,10 +23,8 @@ class _SuccessPageState extends State<SuccessPage> {
     'Sunday'
   ];
 
-  // Meal time options
   List<String> mealTimes = ['Breakfast', 'Lunch', 'Snacks', 'Dinner'];
 
-  // Category options based on meal time
   Map<String, List<String>> categoryOptions = {
     'Breakfast': [
       'Main Dish',
@@ -66,20 +63,19 @@ class _SuccessPageState extends State<SuccessPage> {
       String day, String mealTime, String category, String newItem) async {
     try {
       final url = Uri.parse(
-          'https://mess-app-cmk0.onrender.com'); // Replace with your backend URL
+          'https://mess-app-cmk0.onrender.com/update-meal'); // Backend URL
 
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'day': day,
-          'mealTime': mealTime.toLowerCase(), // Send the meal time in lowercase
+          'mealTime': mealTime.toLowerCase(), // Ensure mealTime is lowercase
           'category': category,
           'newItem': newItem,
         }),
       );
 
-      // Check if the response status is OK (200)
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text('Meal updated successfully')));
