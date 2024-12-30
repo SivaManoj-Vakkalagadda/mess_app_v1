@@ -1,4 +1,6 @@
+// Import necessary modules
 require('dotenv').config(); // Load environment variables from .env file
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -14,7 +16,7 @@ app.use(cors()); // CORS middleware
 app.use(express.json());
 
 // MongoDB URI (should be stored in a .env file for security reasons)
-const mongoURI = process.env.MONGODB_URI || 'mongodb+srv://messsecy:messsecy@messiitgoa.axb7c.mongodb.net/mess_iitgoa?retryWrites=true&w=majority&appName=messiitgoa'; 
+const mongoURI = process.env.MONGODB_URI || 'mongodb+srv://mess_secy:mess_iitgoa@messcluster.olmgi.mongodb.net/mess_iit?retryWrites=true&w=majority'; 
 
 // Connect to MongoDB
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -61,5 +63,5 @@ app.get('/getMenuForDay/:day', async (req, res) => {
 
 // Start the server and listen on the specified port
 app.listen(port, () => {
-  console.log("Server running on port ${port}");
+  console.log(`Server running on port ${port}`);
 });
