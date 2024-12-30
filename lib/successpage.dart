@@ -64,7 +64,7 @@ class _SuccessPageState extends State<SuccessPage> {
       try {
         final response = await http.put(
           Uri.parse(
-              'http://your-server-url/updateMeal'), // Replace with actual server URL
+              'https://mess-app-cmk0.onrender.com'), // Replace with actual server URL
           headers: {
             'Content-Type': 'application/json',
           },

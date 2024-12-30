@@ -19,6 +19,7 @@ app.use(express.json());
 const mongoURI = process.env.MONGODB_URI || 'mongodb+srv://mess_secy:mess_iitgoa@messcluster.olmgi.mongodb.net/mess_iit?retryWrites=true&w=majority'; 
 
 // Connect to MongoDB
+// Connect to MongoDB
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     console.log('Connected to MongoDB');
@@ -66,6 +67,11 @@ app.put('/updateMeal', async (req, res) => {
   try {
     const { day, mealTime, category, newItem } = req.body;
 
+    // Validate the incoming data
+    if (!day || !mealTime || !category || !newItem) {
+      return res.status(400).send('Missing required fields');
+    }
+
     // Find the menu for the specific day
     const menuData = await Menu.findOne({ day: day });
 
@@ -74,38 +80,53 @@ app.put('/updateMeal', async (req, res) => {
     }
 
     // Update the meal item in the corresponding meal time and category
+    let updated = false;
+
     if (mealTime === 'Breakfast') {
       const index = menuData.breakfast.indexOf(category);
       if (index !== -1) {
         menuData.breakfast[index] = newItem;
+        updated = true;
+      } else {
+        return res.status(404).send(`Category '${category}' not found in breakfast`);
       }
     } else if (mealTime === 'Lunch') {
       const index = menuData.lunch.indexOf(category);
       if (index !== -1) {
         menuData.lunch[index] = newItem;
+        updated = true;
+      } else {
+        return res.status(404).send(`Category '${category}' not found in lunch`);
       }
     } else if (mealTime === 'Snacks') {
       const index = menuData.snacks.indexOf(category);
       if (index !== -1) {
         menuData.snacks[index] = newItem;
+        updated = true;
+      } else {
+        return res.status(404).send(`Category '${category}' not found in snacks`);
       }
     } else if (mealTime === 'Dinner') {
       const index = menuData.dinner.indexOf(category);
       if (index !== -1) {
         menuData.dinner[index] = newItem;
+        updated = true;
+      } else {
+        return res.status(404).send(`Category '${category}' not found in dinner`);
       }
     }
 
-    // Save the updated menu
-    await menuData.save();
+    // If meal updated, save it
+    if (updated) {
+      await menuData.save();
+      res.status(200).send('Meal updated successfully');
+    }
 
-    res.status(200).send('Meal updated successfully');
   } catch (err) {
     console.error('Error updating meal:', err);
     res.status(500).send('Server error');
   }
 });
-
 
 // Start the server and listen on the specified port
 app.listen(port, () => {
