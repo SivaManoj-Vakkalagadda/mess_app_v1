@@ -79,16 +79,8 @@ class _HomeScreenState extends State<HomeScreen> {
         // Decode the JSON response
         Map<String, dynamic> menuData = json.decode(response.body);
 
-        // Extract the meals from the response
-        var meals = menuData['meals'];
-
         setState(() {
-          todaysMenu = {
-            'breakfast': List<String>.from(meals['breakfast'] ?? []),
-            'lunch': List<String>.from(meals['lunch'] ?? []),
-            'snacks': List<String>.from(meals['snacks'] ?? []),
-            'dinner': List<String>.from(meals['dinner'] ?? []),
-          };
+          todaysMenu = menuData; // Directly set the entire response
           isLoading = false; // Stop the loading animation
         });
       } else {
@@ -127,10 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // Fallback if no data is fetched yet
     if (todaysMenu.isEmpty) {
       todaysMenu = {
-        'breakfast': ['Loading...'],
-        'lunch': ['Loading...'],
-        'snacks': ['Loading...'],
-        'dinner': ['Loading...']
+        'meals': {'breakfast': {}, 'lunch': {}, 'snacks': {}, 'dinner': {}}
       };
     }
 
@@ -193,33 +182,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-                // Breakfast
-                Container(
-                    alignment: Alignment.center,
-                    child: MealHeading('Breakfast'),
-                    padding: EdgeInsets.all(20.0)),
-                _buildMealTable('breakfast', todaysMenu['breakfast']),
-
-                // Lunch
-                Container(
-                    alignment: Alignment.center,
-                    child: MealHeading('Lunch'),
-                    padding: EdgeInsets.all(20.0)),
-                _buildMealTable('lunch', todaysMenu['lunch']),
-
-                // Snacks
-                Container(
-                    alignment: Alignment.center,
-                    child: MealHeading('Snacks'),
-                    padding: EdgeInsets.all(20.0)),
-                _buildMealTable('snacks', todaysMenu['snacks']),
-
-                // Dinner
-                Container(
-                    alignment: Alignment.center,
-                    child: MealHeading('Dinner'),
-                    padding: EdgeInsets.all(20.0)),
-                _buildMealTable('dinner', todaysMenu['dinner']),
+                // Display meal types for today (Breakfast, Lunch, Snacks, Dinner)
+                _buildMealTable('breakfast', todaysMenu['meals']['breakfast']),
+                _buildMealTable('lunch', todaysMenu['meals']['lunch']),
+                _buildMealTable('snacks', todaysMenu['meals']['snacks']),
+                _buildMealTable('dinner', todaysMenu['meals']['dinner']),
               ],
             ),
           ),
@@ -229,63 +196,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Function to build the meal table dynamically
-  Widget _buildMealTable(String mealType, List<dynamic> mealItems) {
-    // Ensure mealItems is not null and is a List
-    if (mealItems == null) {
-      mealItems = [];
-    }
-
-    if (mealItems.isEmpty) {
+  Widget _buildMealTable(String mealType, Map<String, dynamic> mealItems) {
+    if (mealItems == null || mealItems.isEmpty) {
       return Center(child: Text('No data available'));
     }
 
-    // Mapping of meal categories for each meal type
-    Map<String, List<String>> mealCategories = {
-      'breakfast': [
-        'Main Dish',
-        'Add on',
-        'Egg item',
-        'Sprouts',
-        'Bread',
-        'Beverages',
-        'Milk add-on',
-        'Fruits',
-      ],
-      'lunch': [
-        'Gravy',
-        'Dry Vegetable',
-        'Dal',
-        'Indian Bread',
-        'Rice',
-        'Curd Item',
-        'Papad',
-        'Salad',
-      ],
-      'snacks': [
-        'Main Snack',
-        'Add ons',
-        'Bread item',
-        'Beverages',
-      ],
-      'dinner': [
-        'Curry',
-        'Dry vegetable',
-        'Dal',
-        'Indian Bread',
-        'Rice',
-        'Sweet Dish',
-      ],
-    };
-
-    // Getting the categories for the specific meal type
-    List<String> categories = mealCategories[mealType] ?? [];
-
-    // Ensure mealItems and categories have the same length, if not, pad with empty strings
-    int maxLength = categories.length;
-    if (mealItems.length < maxLength) {
-      mealItems
-          .addAll(List<String>.filled(maxLength - mealItems.length, 'No data'));
-    }
+    List<String> categories = mealItems.keys.toList();
 
     double screenWidth = MediaQuery.of(context).size.width;
     double firstColumnWidth = 0.3 * screenWidth;
@@ -326,34 +242,23 @@ class _HomeScreenState extends State<HomeScreen> {
               ))),
             ],
           ),
-          for (int i = 0;
-              i < categories.length;
-              i++) // Loop through the categories
+          for (var category in categories) // Loop through the categories
             TableRow(children: [
               TableCell(
                   child: Center(
                       child: Padding(
                           padding: const EdgeInsets.all(8.0),
-                          child: Text(categories[i],
+                          child: Text(category,
                               style: TextStyle(fontWeight: FontWeight.bold))))),
               TableCell(
                   child: Center(
                       child: Padding(
                           padding: const EdgeInsets.all(8.0),
-                          child: Text(mealItems[i] ?? 'No data',
+                          child: Text(mealItems[category] ?? 'No data',
                               style: TextStyle(fontSize: 16.0))))),
             ])
         ],
       ),
     );
   }
-}
-
-// Heading Widget
-Widget MealHeading(String heading) {
-  return Text(
-    heading,
-    style: TextStyle(
-        fontSize: 22.0, fontWeight: FontWeight.bold, fontFamily: 'Roboto'),
-  );
 }

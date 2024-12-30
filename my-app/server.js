@@ -14,7 +14,7 @@ app.use(cors()); // CORS middleware
 app.use(express.json());
 
 // MongoDB URI (should be stored in a .env file for security reasons)
-const mongoURI = process.env.MONGODB_URI || 'mongodb+srv://messsecy:messsecy@messiitgoa.axb7c.mongodb.net/mess_iitgoa?retryWrites=true&w=majority&appName=messiitgoa'; 
+const mongoURI = process.env.MONGODB_URI || 'mongodb+srv://mess_secy:mess_iitgoa@messcluster.olmgi.mongodb.net/mess_iit?retryWrites=true&w=majority&appName=messCluster'; 
 
 // Connect to MongoDB
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -25,13 +25,45 @@ mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
     console.error('Error connecting to MongoDB:', err);
   });
 
-// Define a Mongoose schema for the menu
+// Define a Mongoose schema for the menu (updated to include the new structure)
 const menuSchema = new mongoose.Schema({
   day: String, // Day of the week (e.g., "Monday")
-  breakfast: [String], // List of breakfast items
-  lunch: [String], // List of lunch items
-  snacks: [String], // List of snack items
-  dinner: [String], // List of dinner items
+  meals: {
+    breakfast: {
+      main_dish: String,
+      add_on: [String],
+      egg_item: String,
+      sprouts: String,
+      bread: String,
+      beverages: [String],
+      milk_addon: String,
+      fruits: String
+    },
+    lunch: {
+      gravy: String,
+      dry_vegetable: String,
+      dal: String,
+      indian_bread: String,
+      rice: String,
+      curd_item: String,
+      papad: String,
+      salad: String
+    },
+    snacks: {
+      main_snack: String,
+      add_ons: [String],
+      bread_item: String,
+      beverages: [String]
+    },
+    dinner: {
+      curry: String,
+      dry_vegetable: String,
+      dal: String,
+      indian_bread: String,
+      rice: String,
+      sweet_dish: String
+    }
+  }
 });
 
 // Create a model from the menu schema
@@ -61,5 +93,5 @@ app.get('/getMenuForDay/:day', async (req, res) => {
 
 // Start the server and listen on the specified port
 app.listen(port, () => {
-  console.log("Server running on port ${port}");
+  console.log(`Server running on port ${port}`);
 });
