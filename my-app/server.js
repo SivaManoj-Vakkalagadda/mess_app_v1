@@ -84,7 +84,17 @@ app.get('/getMenuForDay/:day', async (req, res) => {
       return res.status(404).send('Menu not found for this day');
     }
 
-    res.json(menuData); // Return the menu data as JSON
+    // Return only the day's menu in a structured map (not an array)
+    const dayMenu = {
+      meals: {
+        breakfast: menuData.meals.breakfast,
+        lunch: menuData.meals.lunch,
+        snacks: menuData.meals.snacks,
+        dinner: menuData.meals.dinner
+      }
+    };
+
+    res.json(dayMenu); // Return the menu data as JSON
   } catch (err) {
     console.error('Error fetching menu:', err);
     res.status(500).send('Server error');

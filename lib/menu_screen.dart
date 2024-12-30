@@ -151,42 +151,27 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Text(
                       currentDate,
                       style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue,
-                      ),
+                          fontSize: 20.0, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
-                // Day buttons bar
-                Container(
-                  padding: EdgeInsets.symmetric(vertical: 10),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: List.generate(7, (index) {
-                        return ElevatedButton(
-                          onPressed: () => _onDaySelected(index),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: selectedDayIndex == index
-                                ? Colors.blueAccent
-                                : Colors.grey,
-                          ),
-                          child: Text(
-                            daysOfTheWeek[index],
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        );
-                      }),
-                    ),
+                // Conditional loading state
+                if (isLoading)
+                  Center(child: CircularProgressIndicator())
+                else
+                  Column(
+                    children: [
+                      for (var mealType in [
+                        'breakfast',
+                        'lunch',
+                        'snacks',
+                        'dinner'
+                      ])
+                        MealCard(
+                            mealType: mealType,
+                            mealData: todaysMenu['meals'][mealType]),
+                    ],
                   ),
-                ),
-                // Display meal types for today (Breakfast, Lunch, Snacks, Dinner)
-                _buildMealTable('breakfast', todaysMenu['meals']['breakfast']),
-                _buildMealTable('lunch', todaysMenu['meals']['lunch']),
-                _buildMealTable('snacks', todaysMenu['meals']['snacks']),
-                _buildMealTable('dinner', todaysMenu['meals']['dinner']),
               ],
             ),
           ),
@@ -194,71 +179,36 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
 
-  // Function to build the meal table dynamically
-  Widget _buildMealTable(String mealType, Map<String, dynamic> mealItems) {
-    if (mealItems == null || mealItems.isEmpty) {
-      return Center(child: Text('No data available'));
-    }
+class MealCard extends StatelessWidget {
+  final String mealType;
+  final Map<String, dynamic> mealData;
 
-    List<String> categories = mealItems.keys.toList();
+  MealCard({required this.mealType, required this.mealData});
 
-    double screenWidth = MediaQuery.of(context).size.width;
-    double firstColumnWidth = 0.3 * screenWidth;
-    double secondColumnWidth = 0.5 * screenWidth;
-
-    return Container(
-      color: Color.fromARGB(255, 230, 240, 255), // Light blue background
-      child: Table(
-        border: TableBorder.all(
-            borderRadius: BorderRadius.circular(12), color: Colors.blue),
-        columnWidths: {
-          0: FixedColumnWidth(firstColumnWidth),
-          1: FixedColumnWidth(secondColumnWidth),
-        },
-        children: [
-          // Add header row for meal type
-          TableRow(
-            children: [
-              TableCell(
-                  child: Center(
-                      child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text('Category',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Roboto',
-                        fontSize: 18)),
-              ))),
-              TableCell(
-                  child: Center(
-                      child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text('Items',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Roboto',
-                        fontSize: 18)),
-              ))),
-            ],
-          ),
-          for (var category in categories) // Loop through the categories
-            TableRow(children: [
-              TableCell(
-                  child: Center(
-                      child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(category,
-                              style: TextStyle(fontWeight: FontWeight.bold))))),
-              TableCell(
-                  child: Center(
-                      child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(mealItems[category] ?? 'No data',
-                              style: TextStyle(fontSize: 16.0))))),
-            ])
-        ],
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.symmetric(vertical: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(mealType.capitalize(),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            if (mealData.isNotEmpty)
+              for (var entry in mealData.entries)
+                Text('${entry.key}: ${entry.value}'),
+            SizedBox(height: 12),
+          ],
+        ),
       ),
     );
   }
+}
+
+extension StringCapitalize on String {
+  String capitalize() => this[0].toUpperCase() + this.substring(1);
 }
