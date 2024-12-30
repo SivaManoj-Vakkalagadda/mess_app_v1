@@ -61,6 +61,52 @@ app.get('/getMenuForDay/:day', async (req, res) => {
   }
 });
 
+// API endpoint to update the meal for a specific day and meal time
+app.put('/updateMeal', async (req, res) => {
+  try {
+    const { day, mealTime, category, newItem } = req.body;
+
+    // Find the menu for the specific day
+    const menuData = await Menu.findOne({ day: day });
+
+    if (!menuData) {
+      return res.status(404).send('Menu not found for this day');
+    }
+
+    // Update the meal item in the corresponding meal time and category
+    if (mealTime === 'Breakfast') {
+      const index = menuData.breakfast.indexOf(category);
+      if (index !== -1) {
+        menuData.breakfast[index] = newItem;
+      }
+    } else if (mealTime === 'Lunch') {
+      const index = menuData.lunch.indexOf(category);
+      if (index !== -1) {
+        menuData.lunch[index] = newItem;
+      }
+    } else if (mealTime === 'Snacks') {
+      const index = menuData.snacks.indexOf(category);
+      if (index !== -1) {
+        menuData.snacks[index] = newItem;
+      }
+    } else if (mealTime === 'Dinner') {
+      const index = menuData.dinner.indexOf(category);
+      if (index !== -1) {
+        menuData.dinner[index] = newItem;
+      }
+    }
+
+    // Save the updated menu
+    await menuData.save();
+
+    res.status(200).send('Meal updated successfully');
+  } catch (err) {
+    console.error('Error updating meal:', err);
+    res.status(500).send('Server error');
+  }
+});
+
+
 // Start the server and listen on the specified port
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);

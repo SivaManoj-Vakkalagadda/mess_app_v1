@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http; // Import for HTTP requests
+import 'dart:convert'; // For encoding JSON
 
 class SuccessPage extends StatefulWidget {
   @override
@@ -56,19 +58,51 @@ class _SuccessPageState extends State<SuccessPage> {
     ],
   };
 
-  // Simulating the update action (no backend)
-  void updateMeal() {
+  // Function to update meal
+  Future<void> updateMeal() async {
     if (selectedCategory != null && textController.text.isNotEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-              'Updated $selectedCategory with "${textController.text}" on $selectedDay for $selectedMealTime.'),
-        ),
-      );
+      try {
+        final response = await http.put(
+          Uri.parse(
+              'http://your-server-url/updateMeal'), // Replace with actual server URL
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: json.encode({
+            'day': selectedDay,
+            'mealTime': selectedMealTime,
+            'category': selectedCategory,
+            'newItem': textController.text,
+          }),
+        );
+
+        if (response.statusCode == 200) {
+          // Success
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Meal updated successfully!'),
+            ),
+          );
+        } else {
+          // Error
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to update meal. Please try again.'),
+            ),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+          ),
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text('Please select a category and enter a new item')),
+          content: Text('Please select a category and enter a new item'),
+        ),
       );
     }
   }
@@ -105,10 +139,9 @@ class _SuccessPageState extends State<SuccessPage> {
                     ),
                   ),
                   SizedBox(height: 8),
-                  // Day dropdown with white background
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.white, // White background for the dropdown
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: DropdownButton<String>(
@@ -123,9 +156,6 @@ class _SuccessPageState extends State<SuccessPage> {
                             value: day, child: Text(day));
                       }).toList(),
                       isExpanded: true,
-                      hint: Text('Select Day'),
-                      dropdownColor: Colors
-                          .white, // Ensure dropdown items also have white background
                     ),
                   ),
                   SizedBox(height: 16),
@@ -140,10 +170,9 @@ class _SuccessPageState extends State<SuccessPage> {
                     ),
                   ),
                   SizedBox(height: 8),
-                  // Meal time dropdown with white background
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.white, // White background for the dropdown
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: DropdownButton<String>(
@@ -151,8 +180,7 @@ class _SuccessPageState extends State<SuccessPage> {
                       onChanged: (String? newValue) {
                         setState(() {
                           selectedMealTime = newValue!;
-                          selectedCategory =
-                              null; // Reset category when meal time changes
+                          selectedCategory = null;
                         });
                       },
                       items: mealTimes
@@ -161,9 +189,6 @@ class _SuccessPageState extends State<SuccessPage> {
                             value: meal, child: Text(meal));
                       }).toList(),
                       isExpanded: true,
-                      hint: Text('Select Meal Time'),
-                      dropdownColor: Colors
-                          .white, // Ensure dropdown items also have white background
                     ),
                   ),
                   SizedBox(height: 16),
@@ -178,10 +203,9 @@ class _SuccessPageState extends State<SuccessPage> {
                     ),
                   ),
                   SizedBox(height: 8),
-                  // Category dropdown with white background
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.white, // White background for the dropdown
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: DropdownButton<String>(
@@ -199,21 +223,16 @@ class _SuccessPageState extends State<SuccessPage> {
                             }).toList()
                           : [],
                       isExpanded: true,
-                      hint: Text('Select Category'),
-                      dropdownColor: Colors
-                          .white, // Ensure dropdown items also have white background
                     ),
                   ),
                   SizedBox(height: 16),
 
                   // TextField wrapped in a container with white background
                   Container(
-                    width: 0.6 *
-                        screenWidth, // Container width is 60% of screen width
+                    width: 0.6 * screenWidth,
                     decoration: BoxDecoration(
-                      color: Colors
-                          .white, // White background for the text field container
-                      borderRadius: BorderRadius.circular(8), // Rounded corners
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: TextField(
                       controller: textController,
@@ -225,7 +244,7 @@ class _SuccessPageState extends State<SuccessPage> {
                           borderSide: BorderSide(color: Colors.black),
                         ),
                       ),
-                      style: TextStyle(color: Colors.black), // Black text color
+                      style: TextStyle(color: Colors.black),
                     ),
                   ),
                   SizedBox(height: 16),
@@ -234,9 +253,6 @@ class _SuccessPageState extends State<SuccessPage> {
                   ElevatedButton(
                     onPressed: updateMeal,
                     child: Text('Submit'),
-                    style: ElevatedButton.styleFrom(
-                      iconColor: Colors.orange, // Button color
-                    ),
                   ),
                 ],
               ),
