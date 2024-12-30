@@ -79,8 +79,16 @@ class _HomeScreenState extends State<HomeScreen> {
         // Decode the JSON response
         Map<String, dynamic> menuData = json.decode(response.body);
 
+        // Extract the meals from the response
+        var meals = menuData['meals'];
+
         setState(() {
-          todaysMenu = menuData; // Directly set the entire response
+          todaysMenu = {
+            'breakfast': List<String>.from(meals['breakfast'] ?? []),
+            'lunch': List<String>.from(meals['lunch'] ?? []),
+            'snacks': List<String>.from(meals['snacks'] ?? []),
+            'dinner': List<String>.from(meals['dinner'] ?? []),
+          };
           isLoading = false; // Stop the loading animation
         });
       } else {
@@ -119,7 +127,10 @@ class _HomeScreenState extends State<HomeScreen> {
     // Fallback if no data is fetched yet
     if (todaysMenu.isEmpty) {
       todaysMenu = {
-        'meals': {'breakfast': {}, 'lunch': {}, 'snacks': {}, 'dinner': {}}
+        'breakfast': ['Loading...'],
+        'lunch': ['Loading...'],
+        'snacks': ['Loading...'],
+        'dinner': ['Loading...']
       };
     }
 
@@ -151,27 +162,64 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Text(
                       currentDate,
                       style: TextStyle(
-                          fontSize: 20.0, fontWeight: FontWeight.w600),
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue,
+                      ),
                     ),
                   ),
                 ),
-                // Conditional loading state
-                if (isLoading)
-                  Center(child: CircularProgressIndicator())
-                else
-                  Column(
-                    children: [
-                      for (var mealType in [
-                        'breakfast',
-                        'lunch',
-                        'snacks',
-                        'dinner'
-                      ])
-                        MealCard(
-                            mealType: mealType,
-                            mealData: todaysMenu['meals'][mealType]),
-                    ],
+                // Day buttons bar
+                Container(
+                  padding: EdgeInsets.symmetric(vertical: 10),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: List.generate(7, (index) {
+                        return ElevatedButton(
+                          onPressed: () => _onDaySelected(index),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: selectedDayIndex == index
+                                ? Colors.blueAccent
+                                : Colors.grey,
+                          ),
+                          child: Text(
+                            daysOfTheWeek[index],
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        );
+                      }),
+                    ),
                   ),
+                ),
+                // Breakfast
+                Container(
+                    alignment: Alignment.center,
+                    child: MealHeading('Breakfast'),
+                    padding: EdgeInsets.all(20.0)),
+                _buildMealTable('breakfast', todaysMenu['breakfast']),
+
+                // Lunch
+                Container(
+                    alignment: Alignment.center,
+                    child: MealHeading('Lunch'),
+                    padding: EdgeInsets.all(20.0)),
+                _buildMealTable('lunch', todaysMenu['lunch']),
+
+                // Snacks
+                Container(
+                    alignment: Alignment.center,
+                    child: MealHeading('Snacks'),
+                    padding: EdgeInsets.all(20.0)),
+                _buildMealTable('snacks', todaysMenu['snacks']),
+
+                // Dinner
+                Container(
+                    alignment: Alignment.center,
+                    child: MealHeading('Dinner'),
+                    padding: EdgeInsets.all(20.0)),
+                _buildMealTable('dinner', todaysMenu['dinner']),
               ],
             ),
           ),
@@ -179,36 +227,133 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-}
 
-class MealCard extends StatelessWidget {
-  final String mealType;
-  final Map<String, dynamic> mealData;
+  // Function to build the meal table dynamically
+  Widget _buildMealTable(String mealType, List<dynamic> mealItems) {
+    // Ensure mealItems is not null and is a List
+    if (mealItems == null) {
+      mealItems = [];
+    }
 
-  MealCard({required this.mealType, required this.mealData});
+    if (mealItems.isEmpty) {
+      return Center(child: Text('No data available'));
+    }
 
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.symmetric(vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(mealType.capitalize(),
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            if (mealData.isNotEmpty)
-              for (var entry in mealData.entries)
-                Text('${entry.key}: ${entry.value}'),
-            SizedBox(height: 12),
-          ],
-        ),
+    // Mapping of meal categories for each meal type
+    Map<String, List<String>> mealCategories = {
+      'breakfast': [
+        'Main Dish',
+        'Add on',
+        'Egg item',
+        'Sprouts',
+        'Bread',
+        'Beverages',
+        'Milk add-on',
+        'Fruits',
+      ],
+      'lunch': [
+        'Gravy',
+        'Dry Vegetable',
+        'Dal',
+        'Indian Bread',
+        'Rice',
+        'Curd Item',
+        'Papad',
+        'Salad',
+      ],
+      'snacks': [
+        'Main Snack',
+        'Add ons',
+        'Bread item',
+        'Beverages',
+      ],
+      'dinner': [
+        'Curry',
+        'Dry vegetable',
+        'Dal',
+        'Indian Bread',
+        'Rice',
+        'Sweet Dish',
+      ],
+    };
+
+    // Getting the categories for the specific meal type
+    List<String> categories = mealCategories[mealType] ?? [];
+
+    // Ensure mealItems and categories have the same length, if not, pad with empty strings
+    int maxLength = categories.length;
+    if (mealItems.length < maxLength) {
+      mealItems
+          .addAll(List<String>.filled(maxLength - mealItems.length, 'No data'));
+    }
+
+    double screenWidth = MediaQuery.of(context).size.width;
+    double firstColumnWidth = 0.3 * screenWidth;
+    double secondColumnWidth = 0.5 * screenWidth;
+
+    return Container(
+      color: Color.fromARGB(255, 230, 240, 255), // Light blue background
+      child: Table(
+        border: TableBorder.all(
+            borderRadius: BorderRadius.circular(12), color: Colors.blue),
+        columnWidths: {
+          0: FixedColumnWidth(firstColumnWidth),
+          1: FixedColumnWidth(secondColumnWidth),
+        },
+        children: [
+          // Add header row for meal type
+          TableRow(
+            children: [
+              TableCell(
+                  child: Center(
+                      child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text('Category',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Roboto',
+                        fontSize: 18)),
+              ))),
+              TableCell(
+                  child: Center(
+                      child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text('Items',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Roboto',
+                        fontSize: 18)),
+              ))),
+            ],
+          ),
+          for (int i = 0;
+              i < categories.length;
+              i++) // Loop through the categories
+            TableRow(children: [
+              TableCell(
+                  child: Center(
+                      child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(categories[i],
+                              style: TextStyle(fontWeight: FontWeight.bold))))),
+              TableCell(
+                  child: Center(
+                      child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(mealItems[i] ?? 'No data',
+                              style: TextStyle(fontSize: 16.0))))),
+            ])
+        ],
       ),
     );
   }
 }
 
-extension StringCapitalize on String {
-  String capitalize() => this[0].toUpperCase() + this.substring(1);
+// Heading Widget
+Widget MealHeading(String heading) {
+  return Text(
+    heading,
+    style: TextStyle(
+        fontSize: 22.0, fontWeight: FontWeight.bold, fontFamily: 'Roboto'),
+  );
 }
